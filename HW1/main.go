@@ -18,21 +18,21 @@ type SortParams struct {
 	isDelEqual      bool
 	isRegisterIgnor bool
 	isNumeral       bool
+	columnCount     int64
 }
 
 func main() {
-	fmt.Println(os.Args[1:])
 	Interface(os.Args[1:])
 }
 
 func Interface(args []string) []string {
 	var sourceFile, destFile string
-	var params = map[string]int64{
-		"isReverse":  0,
-		"isDelEqual": 0,
-		"isRegIgnor": 0,
-		"isNum":      0,
-		"colCount":   0,
+	var params = SortParams{
+		isReverse:       false,
+		isDelEqual:      false,
+		isRegisterIgnor: false,
+		isNumeral:       false,
+		columnCount:     0,
 	}
 
 	for idx := 0; idx < len(args); idx++ {
@@ -40,21 +40,31 @@ func Interface(args []string) []string {
 		if val[0] == '-' {
 			switch val {
 			case "-f":
-				params["isRegIgnor"] = 1
+				params.isRegisterIgnor = true
 			case "-u":
-				params["isDelEqual"] = 1
+				params.isDelEqual = true
 			case "-r":
-				params["isReverse"] = 1
+				params.isReverse = true
 			case "-o":
 				// TODO: проверка отсутствия имени файла
-				destFile = args[idx+1]
-				idx++
+				if idx+1 < len(args) {
+					destFile = args[idx+1]
+					idx++
+				} else {
+					fmt.Println("No destination filename passed")
+					os.Exit(1)
+				}
 			case "-n":
-				params["isNum"] = 1
+				params.isNumeral = true
 			case "-k":
-				colCount, _ := strconv.ParseInt(args[idx+1], 10, 8)
-				params["colCount"] = colCount
-				idx++
+				if idx+1 < len(args) {
+					colCount, _ := strconv.ParseInt(args[idx+1], 10, 8)
+					params.columnCount = colCount
+					idx++
+				} else {
+					fmt.Println("No column number passed")
+					os.Exit(1)
+				}
 			default:
 				fmt.Println("Wrong argument")
 				os.Exit(1)
@@ -90,26 +100,31 @@ func Interface(args []string) []string {
 	return sortPack
 }
 
-func sort(elems []string, params map[string]int64) []string {
-	SortLib.Slice(elems, func(i, j int) (result bool) {
-		a := strings.Split(elems[i], " ")[params["colCount"]]
-		b := strings.Split(elems[j], " ")[params["colCount"]]
+func sort(elems []string, params SortParams) []string {
 
-		if params["isRegIgnor"] == 1 {
+	if params.isDelEqual {
+		deleteDublicates(&elems, params.isRegisterIgnor)
+	}
+
+	SortLib.Slice(elems, func(i, j int) (result bool) {
+		a := strings.Split(elems[i], " ")[params.columnCount]
+		b := strings.Split(elems[j], " ")[params.columnCount]
+
+		if params.isRegisterIgnor {
 			a = strings.ToLower(a)
 			b = strings.ToLower(b)
 		}
 
-		if params["isNum"] == 1 {
+		if params.isNumeral {
 			aNum, _ := strconv.ParseFloat(a, 64)
 			bNum, _ := strconv.ParseFloat(b, 64)
 			result = aNum < bNum
-			if params["isReverse"] != 0 {
+			if params.isReverse {
 				result = aNum > bNum
 			}
 		} else {
 			result = a < b
-			if params["isReverse"] != 0 {
+			if params.isReverse {
 				result = a > b
 			}
 		}
@@ -135,4 +150,25 @@ func getStringsArray(fileName string) []string {
 	}
 
 	return ans
+}
+
+func deleteDublicates(sl *[]string, isRegisterIgnored bool) {
+	set := make(map[string]bool)
+	count := 0
+	slice := *sl
+
+	for idx, val := range slice {
+		if isRegisterIgnored {
+			val = strings.ToLower(val)
+		}
+		if _, ex := set[val]; ex {
+			count++
+			slice[idx] = slice[len(slice)-count]
+		} else {
+			set[val] = true
+		}
+	}
+
+	*sl = slice[:len(slice)-count]
+
 }

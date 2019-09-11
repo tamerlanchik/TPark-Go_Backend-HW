@@ -21,11 +21,13 @@ var tests = []testpair{
 	{[]string{directoryName + "/" + "test-3.txt", "-n", "-r"}, directoryName + "/" + "test-3-ans.txt"},
 	{[]string{directoryName + "/" + "test-4.txt", "-f"}, directoryName + "/" + "test-4-ans.txt"},
 	{[]string{directoryName + "/" + "test-5.txt", "-k", "2", "-n"}, directoryName + "/" + "test-5-ans.txt"},
+	{[]string{directoryName + "/" + "test-6.txt", "-u"}, directoryName + "/" + "test-6-ans.txt"},
+	{[]string{directoryName + "/" + "test-7.txt", "-u", "-f"}, directoryName + "/" + "test-7-ans.txt"},
 }
 
 func TestInterface(t *testing.T) {
 
-	for _, pair := range tests {
+	for idx, pair := range tests {
 		// TODO: проверка на файл
 		ans := strings.Join(Interface(pair.input), "\r\n")
 		file, err := ioutil.ReadFile(pair.ansFile)
@@ -35,7 +37,7 @@ func TestInterface(t *testing.T) {
 		}
 		rightAns := string(file)
 		if ans != rightAns {
-			t.Error("Wrong.\n->Got\n" + ans + "\n->instead\n" + rightAns)
+			t.Errorf("Test %d failed.\n->Got\n %s\n->instead\n %s\n", idx+1, ans, rightAns)
 		}
 	}
 
