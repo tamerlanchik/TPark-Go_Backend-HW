@@ -13,10 +13,9 @@ type testpair struct {
 	ansFile string
 }
 
-//const directoryName = "tests"
-
 var tests = []testpair{
-	{[]string{directoryName + "/" + "test-1.txt"}, directoryName + "/" + "test-1-ans.txt"},
+	{[]string{directoryName + "/" + "test-0.txt"}, directoryName + "/" + "test-0-ans.txt"},
+	{[]string{directoryName + "/" + "test-1.txt", "-r"}, directoryName + "/" + "test-1-ans.txt"},
 	{[]string{directoryName + "/" + "test-2.txt", "-n"}, directoryName + "/" + "test-2-ans.txt"},
 	{[]string{directoryName + "/" + "test-3.txt", "-n", "-r"}, directoryName + "/" + "test-3-ans.txt"},
 	{[]string{directoryName + "/" + "test-4.txt", "-f"}, directoryName + "/" + "test-4-ans.txt"},
@@ -26,16 +25,17 @@ var tests = []testpair{
 }
 
 func TestInterface(t *testing.T) {
-
 	for idx, pair := range tests {
-		// TODO: проверка на файл
 		ans := strings.Join(Interface(pair.input), "\r\n")
+
 		file, err := ioutil.ReadFile(pair.ansFile)
 		if err != nil {
 			fmt.Print(err)
 			os.Exit(1)
 		}
+
 		rightAns := string(file)
+
 		if ans != rightAns {
 			t.Errorf("Test %d failed.\n->Got\n %s\n->instead\n %s\n", idx+1, ans, rightAns)
 		}

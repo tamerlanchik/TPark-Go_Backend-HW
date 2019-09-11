@@ -46,7 +46,6 @@ func Interface(args []string) []string {
 			case "-r":
 				params.isReverse = true
 			case "-o":
-				// TODO: проверка отсутствия имени файла
 				if idx+1 < len(args) {
 					destFile = args[idx+1]
 					idx++
@@ -73,13 +72,11 @@ func Interface(args []string) []string {
 			if sourceFile == "" {
 				sourceFile = val
 			} else {
-				fmt.Println("Source file already written")
+				fmt.Println("Source file is already written")
 				os.Exit(1)
 			}
 		}
 	}
-
-	fmt.Println(params, destFile, sourceFile)
 
 	sortPack := getStringsArray(sourceFile)
 
@@ -87,7 +84,7 @@ func Interface(args []string) []string {
 	if destFile != "" {
 		file, err := os.Create(destFile)
 		if err != nil {
-			fmt.Println("Cannot create destination file")
+			fmt.Println("Cannot create the destination file")
 			os.Exit(1)
 		}
 		defer file.Close()
@@ -123,9 +120,10 @@ func sort(elems []string, params SortParams) []string {
 				result = aNum > bNum
 			}
 		} else {
-			result = a < b
 			if params.isReverse {
 				result = a > b
+			} else {
+				result = a < b
 			}
 		}
 		return
