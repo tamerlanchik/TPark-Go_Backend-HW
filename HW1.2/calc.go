@@ -39,7 +39,9 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 		return nil
 	}
 	if v.level < v.expr.maxLevel {
-		v.expr.calculate()
+		for i := 0; i < v.expr.maxLevel-v.level; i++ {
+			v.expr.calculate()
+		}
 	}
 	v.expr.maxLevel = v.level
 	switch n.(type) {
@@ -51,11 +53,20 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 		node := n.(*ast.BasicLit)
 		value, _ := strconv.ParseFloat(node.Value, 64)
 		v.expr.values = append(v.expr.values, value)
+
 	case *ast.UnaryExpr:
 		node := n.(*ast.UnaryExpr)
 		v.expr.operators = append(v.expr.operators, node.Op)
+		// для унарного минуса вычитаем
+		// реальное положительное число из нуля
 		v.expr.values = append(v.expr.values, 0.0)
+
+	// В случае скобочного выражения <ParentExpr>
+	// уровень итогового дерева не меняется
+	case *ast.ParenExpr:
+		v.level--
 	}
+	//fmt.Printf("%s%T\n", strings.Repeat("\t", int(v.level)), n)
 	v.level++
 	return v
 }
