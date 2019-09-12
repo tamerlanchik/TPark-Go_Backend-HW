@@ -9,7 +9,8 @@ type testPair struct {
 
 var tests = []testPair{
 	{"(1+2)-3", 0},
-	{"(1+2)*3", 9},
+	{"( 1 + 2)*3", 9},
+	//{"-4+6", 2},
 }
 
 func TestCalcInterface(t *testing.T) {

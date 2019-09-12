@@ -30,36 +30,41 @@ func main() {
 type Expr struct {
 	operators []token.Token
 	values    []float64
-	maxLevel  visitor
+	maxLevel  int
 }
 
-var expr Expr
+//var expr Expr
 
-type visitor int
+type visitor struct {
+	level int
+	expr  *Expr
+}
 
 func (v visitor) Visit(n ast.Node) ast.Visitor {
 	if n == nil {
 		return nil
 	}
-	if v < expr.maxLevel {
-		expr.calculate()
+	if v.level < v.expr.maxLevel {
+		v.expr.calculate()
 	}
-	expr.maxLevel = v
+	v.expr.maxLevel = v.level
 	switch n.(type) {
 	case *ast.BinaryExpr:
 		node := n.(*ast.BinaryExpr)
-		expr.operators = append(expr.operators, node.Op)
+		v.expr.operators = append(v.expr.operators, node.Op)
 	case *ast.BasicLit:
 		node := n.(*ast.BasicLit)
 		value, _ := strconv.ParseFloat(node.Value, 64)
-		expr.values = append(expr.values, value)
+		v.expr.values = append(v.expr.values, value)
 	}
-	//fmt.Printf("%s%T\n", strings.Repeat("\t", int(v)), n)
-	return v + 1
+	v.level++
+	return v
 }
 
 func CalcInterface(expression string) (ans float64) {
+	var expr Expr
 	var v visitor
+	v.expr = &expr
 	f, _ := parser.ParseExpr(expression)
 	ast.Walk(v, f)
 
