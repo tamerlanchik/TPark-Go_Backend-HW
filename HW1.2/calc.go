@@ -14,36 +14,37 @@ import (
 var level visitor
 
 func main() {
-	/*
-		if len(os.Args) < 2 {
-			fmt.Println("Empty expression")
-			os.Exit(1)
-		}
-		fmt.Println(CalcInterface(os.Args[1]))*/
-	fmt.Println(CalcInterface("(1+2)-3"))
+	if len(os.Args) < 2 {
+		fmt.Println("Empty expression")
+		os.Exit(1)
+	}
+	fmt.Println(CalcInterface(os.Args[1]))
 }
 
-type Expr struct {
+// С этой инвариантной структурой ходим по дереву
+type TreeWalkStorage struct {
 	operators []token.Token
 	values    []float64
-	maxLevel  int
+	// храним самый глубокий уровень дерева,
+	// чтобы определить начало возврата вверх при обходе дерева
+	maxLevel int
 }
 
 type visitor struct {
-	level int
-	expr  *Expr
+	level int // текущий уровень дерева
+	expr  *TreeWalkStorage
 }
 
 func (v visitor) Visit(n ast.Node) ast.Visitor {
 	if n == nil {
 		return nil
 	}
-	if v.level < v.expr.maxLevel {
-		for i := 0; i < v.expr.maxLevel-v.level; i++ {
-			v.expr.calculate()
-		}
+	// Вычисляем поддерево, из которого вышли
+	for i := 0; i < v.expr.maxLevel-v.level; i++ {
+		v.expr.calculate()
 	}
 	v.expr.maxLevel = v.level
+
 	switch n.(type) {
 	case *ast.BinaryExpr:
 		node := n.(*ast.BinaryExpr)
@@ -72,12 +73,15 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 }
 
 func CalcInterface(expression string) (ans float64) {
-	var expr Expr
+	var expr TreeWalkStorage
 	var v visitor
 	v.expr = &expr
+	// Парсинг строки как исходного кода Golang.
+	// Построение дерева выражений.
 	f, _ := parser.ParseExpr(expression)
-	ast.Walk(v, f)
+	ast.Walk(v, f) // Обход "in depth-first" :(
 
+	// Досчитываем результат после окончания обхода дерева
 	for len(expr.operators) > 0 {
 		expr.calculate()
 	}
@@ -85,13 +89,16 @@ func CalcInterface(expression string) (ans float64) {
 	return
 }
 
-func (e *Expr) calculate() {
+func (e *TreeWalkStorage) calculate() {
 	oper := e.operators[len(e.operators)-1]
 	e.operators = e.operators[:len(e.operators)-1]
+
 	a := e.values[len(e.values)-1]
 	b := e.values[len(e.values)-2]
 	e.values = e.values[:len(e.values)-2]
+
 	var result float64
+
 	// Order of operands is reverces
 	switch oper {
 	case token.ADD:
