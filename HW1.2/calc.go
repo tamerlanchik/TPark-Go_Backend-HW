@@ -1,3 +1,5 @@
+// Source: https://medium.com/justforfunc/understanding-go-programs-with-go-parser-c4e88a6edb87
+
 package main
 
 import (
@@ -5,25 +7,19 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"os"
 	"strconv"
 )
 
 var level visitor
 
 func main() {
-
-	/*f, _ := parser.ParseExpr("(1+2)-3")
-	var v visitor
-	ast.Walk(v, f)
-	for len(opers) > 0 {
-		calculate(&numbers, &opers)
-	}
-
-	if len(os.Args) < 2 {
-		fmt.Println("Empty expression")
-		os.Exit(1)
-	}
-	fmt.Println(CalcInterface(os.Args[1]))*/
+	/*
+		if len(os.Args) < 2 {
+			fmt.Println("Empty expression")
+			os.Exit(1)
+		}
+		fmt.Println(CalcInterface(os.Args[1]))*/
 	fmt.Println(CalcInterface("(1+2)-3"))
 }
 
@@ -32,8 +28,6 @@ type Expr struct {
 	values    []float64
 	maxLevel  int
 }
-
-//var expr Expr
 
 type visitor struct {
 	level int
@@ -52,10 +46,15 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 	case *ast.BinaryExpr:
 		node := n.(*ast.BinaryExpr)
 		v.expr.operators = append(v.expr.operators, node.Op)
+
 	case *ast.BasicLit:
 		node := n.(*ast.BasicLit)
 		value, _ := strconv.ParseFloat(node.Value, 64)
 		v.expr.values = append(v.expr.values, value)
+	case *ast.UnaryExpr:
+		node := n.(*ast.UnaryExpr)
+		v.expr.operators = append(v.expr.operators, node.Op)
+		v.expr.values = append(v.expr.values, 0.0)
 	}
 	v.level++
 	return v
@@ -75,11 +74,6 @@ func CalcInterface(expression string) (ans float64) {
 	return
 }
 
-func generatePolandNotation(source string) (result []string) {
-
-	return
-}
-
 func (e *Expr) calculate() {
 	oper := e.operators[len(e.operators)-1]
 	e.operators = e.operators[:len(e.operators)-1]
@@ -87,17 +81,19 @@ func (e *Expr) calculate() {
 	b := e.values[len(e.values)-2]
 	e.values = e.values[:len(e.values)-2]
 	var result float64
+	// Order of operands is reverces
 	switch oper {
 	case token.ADD:
-		result = a + b
+		result = b + a
 	case token.SUB:
-		result = a - b
+		result = b - a
 	case token.MUL:
-		result = a * b
+		result = b * a
 	case token.QUO:
-		result = a / b
+		result = b / a
 	default:
 		fmt.Println("?")
+		os.Exit(1)
 	}
 	e.values = append(e.values, result)
 }
