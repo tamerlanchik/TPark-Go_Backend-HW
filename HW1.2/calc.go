@@ -1,5 +1,3 @@
-// Source: https://medium.com/justforfunc/understanding-go-programs-with-go-parser-c4e88a6edb87
-
 package main
 
 import (
