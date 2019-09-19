@@ -9,24 +9,58 @@ import (
 )
 
 type testpair struct {
-	input   []string
+	input   string
+	params  SortParams
 	ansFile string
 }
 
 var tests = []testpair{
-	{[]string{directoryName + "/" + "test-0.txt"}, directoryName + "/" + "test-0-ans.txt"},
-	{[]string{directoryName + "/" + "test-1.txt", "-r"}, directoryName + "/" + "test-1-ans.txt"},
-	{[]string{directoryName + "/" + "test-2.txt", "-n"}, directoryName + "/" + "test-2-ans.txt"},
-	{[]string{directoryName + "/" + "test-3.txt", "-n", "-r"}, directoryName + "/" + "test-3-ans.txt"},
-	{[]string{directoryName + "/" + "test-4.txt", "-f"}, directoryName + "/" + "test-4-ans.txt"},
-	{[]string{directoryName + "/" + "test-5.txt", "-k", "2", "-n"}, directoryName + "/" + "test-5-ans.txt"},
-	{[]string{directoryName + "/" + "test-6.txt", "-u"}, directoryName + "/" + "test-6-ans.txt"},
-	{[]string{directoryName + "/" + "test-7.txt", "-u", "-f"}, directoryName + "/" + "test-7-ans.txt"},
+	{
+		directoryName + "/" + "test-0.txt",
+		SortParams{},
+		directoryName + "/" + "test-0-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-1.txt",
+		SortParams{isReverse: true},
+		directoryName + "/" + "test-1-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-2.txt",
+		SortParams{isNumeral: true},
+		directoryName + "/" + "test-2-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-3.txt",
+		SortParams{isNumeral: true, isReverse: true},
+		directoryName + "/" + "test-3-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-4.txt",
+		SortParams{isRegisterIgnor: true},
+		directoryName + "/" + "test-4-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-5.txt",
+		SortParams{isNumeral: true, columnCount: 2},
+		directoryName + "/" + "test-5-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-6.txt",
+		SortParams{isDelEqual: true},
+		directoryName + "/" + "test-6-ans.txt",
+	},
+	{
+		directoryName + "/" + "test-7.txt",
+		SortParams{isDelEqual: true, isRegisterIgnor: true},
+		directoryName + "/" + "test-7-ans.txt",
+	},
 }
 
 func TestInterface(t *testing.T) {
 	for idx, pair := range tests {
-		ans := strings.Join(Interface(pair.input), "\r\n")
+		sortItems := getStringsArray(pair.input)
+		ans := strings.Join(sort(sortItems, pair.params), "\r\n")
 
 		file, err := ioutil.ReadFile(pair.ansFile)
 		if err != nil {

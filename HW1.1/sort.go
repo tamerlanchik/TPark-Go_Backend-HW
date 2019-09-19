@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	SortLib "sort"
@@ -22,61 +23,21 @@ type SortParams struct {
 }
 
 func main() {
-	Interface(os.Args[1:])
-}
-
-func Interface(args []string) []string {
+	//Interface(os.Args[1:])
 	var sourceFile, destFile string
-	var params = SortParams{
-		isReverse:       false,
-		isDelEqual:      false,
-		isRegisterIgnor: false,
-		isNumeral:       false,
-		columnCount:     0,
-	}
+	var params = SortParams{}
 
-	for idx := 0; idx < len(args); idx++ {
-		val := args[idx]
-		if val[0] == '-' {
-			switch val {
-			case "-f":
-				params.isRegisterIgnor = true
-			case "-u":
-				params.isDelEqual = true
-			case "-r":
-				params.isReverse = true
-			case "-o":
-				if idx+1 < len(args) {
-					destFile = args[idx+1]
-					idx++
-				} else {
-					fmt.Println("No destination filename passed")
-					os.Exit(1)
-				}
-			case "-n":
-				params.isNumeral = true
-			case "-k":
-				if idx+1 < len(args) {
-					colCount, _ := strconv.ParseInt(args[idx+1], 10, 8)
-					params.columnCount = colCount
-					idx++
-				} else {
-					fmt.Println("No column number passed")
-					os.Exit(1)
-				}
-			default:
-				fmt.Println("Wrong argument")
-				os.Exit(1)
-			}
-		} else {
-			if sourceFile == "" {
-				sourceFile = val
-			} else {
-				fmt.Println("Source file is already written")
-				os.Exit(1)
-			}
-		}
-	}
+	sourceFile = os.Args[1]
+	os.Args = os.Args[1:] // Remove source filename from the parser view
+
+	flag.BoolVar(&params.isReverse, "r", false, "Sort in reversed order")
+	flag.BoolVar(&params.isDelEqual, "u", false, "Sort deleting coincident elements")
+	flag.BoolVar(&params.isRegisterIgnor, "f", false, "Sort no taking register in account")
+	flag.BoolVar(&params.isNumeral, "n", false, "Sort as numeral values")
+	flag.Int64Var(&params.columnCount, "k", 0, "Sort by column")
+	flag.StringVar(&destFile, "o", "", "Srite result into the file")
+
+	flag.Parse()
 
 	sortPack := getStringsArray(sourceFile)
 
@@ -94,7 +55,7 @@ func Interface(args []string) []string {
 	} else {
 		fmt.Println(strings.Join(sortPack, "\r\n"))
 	}
-	return sortPack
+	fmt.Println(sortPack)
 }
 
 func sort(elems []string, params SortParams) []string {
