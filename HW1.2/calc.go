@@ -16,7 +16,7 @@ func main() {
 		fmt.Println("Empty expression")
 		os.Exit(1)
 	}
-	fmt.Println(CalcInterface(os.Args[1]))
+	fmt.Println(CalcExpression(os.Args[1]))
 }
 
 // С этой инвариантной структурой ходим по дереву
@@ -70,7 +70,7 @@ func (v visitor) Visit(n ast.Node) ast.Visitor {
 	return v
 }
 
-func CalcInterface(expression string) (ans float64) {
+func CalcExpression(expression string) (ans float64) {
 	var expr TreeWalkStorage
 	var v visitor
 	v.expr = &expr
