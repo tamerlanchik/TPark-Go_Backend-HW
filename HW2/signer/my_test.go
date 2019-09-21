@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -32,12 +33,17 @@ func TestOne(t *testing.T) {
 // Тест на продолжительный поток данных
 func TestTwo(t *testing.T) {
 	var result1, result2 int
-	const count = maxDataSize
+	const (
+		count      = maxDataSize
+		maxTimeout = 30
+	)
+	rand.Seed(1234)
 	freeFlowJobs := []job{
 		job(func(in, out chan interface{}) {
 			for i := 0; i < count; i++ {
 				out <- i
-				time.Sleep(10 * time.Millisecond)
+				timeout := rand.Intn(maxTimeout)
+				time.Sleep(time.Duration(timeout) * time.Millisecond)
 			}
 		}),
 		job(func(in, out chan interface{}) {
@@ -45,7 +51,8 @@ func TestTwo(t *testing.T) {
 			for val := range in {
 				sum += val.(int)
 				out <- val.(int)
-				time.Sleep(30 * time.Millisecond)
+				timeout := rand.Intn(maxTimeout)
+				time.Sleep(3 * time.Duration(timeout) * time.Millisecond)
 			}
 			result1 = sum
 		}),
