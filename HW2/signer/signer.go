@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -51,7 +52,7 @@ func MultiHash(in, out chan interface{}) {
 		fmt.Printf("MultyHash: %s\n", data)
 		tempResult := make([]string, 0, hashCount)
 		for th := 0; th < hashCount; th++ {
-			tempResult = append(tempResult, DataSignerCrc32(string(th)+data))
+			tempResult = append(tempResult, DataSignerCrc32(strconv.Itoa(th)+data))
 		}
 		out <- strings.Join(tempResult, "")
 	}
