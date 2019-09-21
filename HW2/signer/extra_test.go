@@ -47,5 +47,4 @@ func TestByIlia(t *testing.T) {
 	if recieved != (1+3+4)*3 {
 		t.Errorf("f3 have not collected inputs, recieved = %d", recieved)
 	}
-}
-*/
+}*/

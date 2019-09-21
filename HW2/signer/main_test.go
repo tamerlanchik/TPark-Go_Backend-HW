@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -19,27 +18,20 @@ func TestPipeline(t *testing.T) {
 	var recieved uint32
 	freeFlowJobs := []job{
 		job(func(in, out chan interface{}) {
-			fmt.Println("Start job1")
 			out <- 1
-			fmt.Println("job1 data written. Start sleep")
 			time.Sleep(10 * time.Millisecond)
-			fmt.Println("job1 awake")
 			currRecieved := atomic.LoadUint32(&recieved)
 			// в чем тут суть
 			// если вы накапливаете значения, то пока вся функция не отрабоатет - дальше они не пойдут
 			// тут я проверяю, что счетчик увеличился в следующей функции
 			// это значит что туда дошло значение прежде чем текущая функция отработала
-			fmt.Println(currRecieved)
 			if currRecieved == 0 {
 				ok = false
-				fmt.Println("job1: zero value")
 			}
 		}),
 		job(func(in, out chan interface{}) {
-			fmt.Println("Start job2")
 			for _ = range in {
 				atomic.AddUint32(&recieved, 1)
-				fmt.Println("job2: add")
 			}
 		}),
 	}
