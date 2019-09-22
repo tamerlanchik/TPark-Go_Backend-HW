@@ -1,7 +1,13 @@
 package main
 
+import (
+	"math/rand"
+	"testing"
+	"time"
+)
+
 // Тестируем однократный обмен данными
-/*
+
 func TestOne(t *testing.T) {
 	numb := 123
 	var newNumb int
@@ -24,13 +30,13 @@ func TestOne(t *testing.T) {
 		t.Errorf("Wrong value got: %d instead %d", newNumb, numb*3)
 	}
 }
-*/
+
 // Тест на продолжительный поток данных
-/*
+
 func TestTwo(t *testing.T) {
 	var result1, result2 int
 	const (
-		count      = maxDataSize
+		count      = 100
 		maxTimeout = 30
 	)
 	rand.Seed(1234)
@@ -71,4 +77,3 @@ func TestTwo(t *testing.T) {
 		t.Errorf("Wrong2 : got %d instead %d", result2, trueResult)
 	}
 }
-*/

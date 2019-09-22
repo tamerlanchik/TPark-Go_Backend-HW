@@ -16,7 +16,6 @@ import (
 	это не похволяет запускать на конвейере бесконечные задачи
 правильное поведение: обеспечить беспрепятственный поток
 */
-/*
 func TestPipeline(t *testing.T) {
 
 	var ok = true
@@ -45,7 +44,6 @@ func TestPipeline(t *testing.T) {
 		t.Errorf("no value free flow - dont collect them")
 	}
 }
-*/
 
 func TestSigner(t *testing.T) {
 
