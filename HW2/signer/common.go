@@ -55,6 +55,6 @@ var DataSignerCrc32 = func(data string) string {
 	data += DataSignerSalt
 	crcH := crc32.ChecksumIEEE([]byte(data))
 	dataHash := strconv.FormatUint(uint64(crcH), 10)
-	//time.Sleep(time.Second)
+	time.Sleep(time.Second)
 	return dataHash
 }

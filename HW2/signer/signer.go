@@ -53,29 +53,29 @@ type HashExecutor struct {
 
 func (h *HashExecutor) PipelineCrc32() {
 	wg := &sync.WaitGroup{}
-	fmt.Println("Start PipelineCrs32")
+	//fmt.Println("Start PipelineCrs32")
 	for task := range h.Channel {
-		//fmt.Println("PipelineCrc32: value")
+		////fmt.Println("PipelineCrc32: value")
 		data := fmt.Sprintf("%v", <-task.in)
-		fmt.Printf("PipelineCrc32-value: %s\n", data)
+		//fmt.Printf("PipelineCrc32-value: %s\n", data)
 		wg.Add(1)
 		go func(f func(data string) string, data string, out chan interface{}, wg *sync.WaitGroup) {
 			defer wg.Done()
 			//defer close(out)
 			out <- f(data)
-			fmt.Printf("PipelineCrc32-inside: done - %s\n", data)
+			//fmt.Printf("PipelineCrc32-inside: done - %s\n", data)
 		}(DataSignerCrc32, data, task.out, wg)
 	}
 	wg.Wait()
 }
 
 func (h *HashExecutor) PipelineMd5() {
-	fmt.Println("Start PipelineMD5")
+	//fmt.Println("Start PipelineMD5")
 	for task := range h.Channel {
 		data := fmt.Sprintf("%v", <-task.in)
-		fmt.Printf("PipelineMd5-value: %s\n", data)
+		//fmt.Printf("PipelineMd5-value: %s\n", data)
 		task.out <- DataSignerMd5(data)
-		fmt.Printf("PipelineMd5: step done - %s\n", data)
+		//fmt.Printf("PipelineMd5: step done - %s\n", data)
 	}
 }
 func (h *HashExecutor) Init() {
@@ -89,13 +89,13 @@ var Crc32Executor = HashExecutor{}
 var Md5Executor = HashExecutor{}
 
 func SingleHash(in, out chan interface{}) {
-	timer := time.Tick(time.Second)
-	go func() {
-		for t := range timer {
-			fmt.Println("\nTIME: ", t)
-		}
-	}()
-	fmt.Printf("SingleHash:\n")
+	// timer := time.Tick(time.Second)
+	// go func() {
+	// 	for t := range timer {
+	// 		fmt.Println("\nTIME: ", t)
+	// 	}
+	// }()
+	//fmt.Printf("SingleHash:\n")
 	Crc32Executor.Init()
 	Md5Executor.Init()
 	go Crc32Executor.PipelineCrc32()
@@ -103,7 +103,7 @@ func SingleHash(in, out chan interface{}) {
 
 	wg := &sync.WaitGroup{}
 	for val := range in {
-		fmt.Printf("SingleHash: %s\n", fmt.Sprintf("%v", val))
+		//fmt.Printf("SingleHash: %s\n", fmt.Sprintf("%v", val))
 		//out <- (DataSignerCrc32(data) + "~" + DataSignerCrc32(DataSignerMd5(data)))
 		wg.Add(1)
 		go func(val interface{}) {
@@ -126,18 +126,18 @@ func SingleHash(in, out chan interface{}) {
 				select {
 				case data := <-pack1.out:
 					s1 = data.(string) + "~"
-					fmt.Printf("SingleHash-inside-%s: got pack1.out: %s\n", data, s1)
+					//fmt.Printf("SingleHash-inside-%s: got pack1.out: %s\n", data, s1)
 				case data := <-pack2.out:
 					pack3.in <- data
-					fmt.Printf("SingleHash-inside-%s: got pack2.out: %s\n", data, s1)
+					//fmt.Printf("SingleHash-inside-%s: got pack2.out: %s\n", data, s1)
 					Crc32Executor.AddPack(pack3)
 				case data := <-pack3.out:
 					s2 = data.(string)
-					fmt.Printf("SingleHash-inside-%s: got pack3.out: %s\n", data, s1)
+					//fmt.Printf("SingleHash-inside-%s: got pack3.out: %s\n", data, s1)
 				}
 			}
 			out <- s1 + s2
-			fmt.Printf("Single-hash< result\n")
+			//fmt.Printf("Single-hash< result\n")
 		}(val)
 		//time.Sleep(10 * time.Second)
 
@@ -147,7 +147,7 @@ func SingleHash(in, out chan interface{}) {
 
 func MultiHash(in, out chan interface{}) {
 	time.Sleep(1 * time.Second)
-	fmt.Printf("\nMultyHash:\n\n")
+	//fmt.Printf("\nMultyHash:\n\n")
 	const hashCount = 6
 	wgSuper := &sync.WaitGroup{}
 	for val := range in {
@@ -156,7 +156,7 @@ func MultiHash(in, out chan interface{}) {
 			defer wgSuper.Done()
 			wg := &sync.WaitGroup{}
 			data := val.(string)
-			fmt.Printf("MultyHash: %s\n", data)
+			//fmt.Printf("MultyHash: %s\n", data)
 			tempResult := make([]string, hashCount, hashCount)
 			for th := 0; th < hashCount; th++ {
 				wg.Add(1)
@@ -168,12 +168,12 @@ func MultiHash(in, out chan interface{}) {
 					Crc32Executor.AddPack(pack1)
 					res := (<-pack1.out).(string)
 					tempResult[th] = res
-					fmt.Printf("MultiHash-inside (%s): done %s\n", data, res)
+					//fmt.Printf("MultiHash-inside (%s): done %s\n", data, res)
 				}(data, th)
 			}
 			wg.Wait()
 			result := strings.Join(tempResult, "")
-			fmt.Printf("\nMultiHash-result: %s\n\n", result)
+			//fmt.Printf("\nMultiHash-result: %s\n\n", result)
 			out <- result
 		}(val)
 		//time.Sleep(10 * time.Second)
@@ -182,17 +182,17 @@ func MultiHash(in, out chan interface{}) {
 }
 
 func CombineResults(in, out chan interface{}) {
-	time.Sleep(4 * time.Second)
-	fmt.Printf("CombineResults:\n")
+	//time.Sleep(4 * time.Second)
+	//fmt.Printf("CombineResults:\n")
 	dataPackage := make([]string, 0)
 	for val := range in {
 		//data := fmt.Sprintf("%v", val)
 		data := val.(string)
-		fmt.Printf("CombineResults got: %s\n", data)
+		//fmt.Printf("CombineResults got: %s\n", data)
 		dataPackage = append(dataPackage, data)
 	}
-	fmt.Println("Start sorting")
+	//fmt.Println("Start sorting")
 	sort.Strings(dataPackage)
-	fmt.Println("End sorting")
+	//fmt.Println("End sorting")
 	out <- strings.Join(dataPackage, "_")
 }
