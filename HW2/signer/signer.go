@@ -12,6 +12,8 @@ const (
 	maxDataSize = 100
 )
 
+func main() {}
+
 type ChanPack struct {
 	in  chan interface{}
 	out chan interface{}
@@ -50,7 +52,7 @@ type HashExecutor struct {
 	Channel chan ChanPack
 }
 
-func (h *HashExecutor) PipelineCrc32() {
+func (h *HashExecutor) ExecuteCrc32() {
 	wg := &sync.WaitGroup{}
 	for task := range h.Channel {
 		wg.Add(1)
@@ -63,7 +65,7 @@ func (h *HashExecutor) PipelineCrc32() {
 	wg.Wait()
 }
 
-func (h *HashExecutor) PipelineMd5() {
+func (h *HashExecutor) ExecuteMd5() {
 	for task := range h.Channel {
 		data := fmt.Sprintf("%v", <-task.in)
 		task.out <- DataSignerMd5(data)
@@ -82,8 +84,8 @@ var Md5Executor = HashExecutor{}
 func SingleHash(in, out chan interface{}) {
 	Crc32Executor.Init()
 	Md5Executor.Init()
-	go Crc32Executor.PipelineCrc32()
-	go Md5Executor.PipelineMd5()
+	go Crc32Executor.ExecuteCrc32()
+	go Md5Executor.ExecuteMd5()
 
 	wg := &sync.WaitGroup{}
 	for val := range in {
